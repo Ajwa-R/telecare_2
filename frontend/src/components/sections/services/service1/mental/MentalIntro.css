@@ -1,0 +1,9 @@
+.scrollable-content {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollable-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

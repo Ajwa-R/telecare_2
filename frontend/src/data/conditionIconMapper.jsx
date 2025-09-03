@@ -1,0 +1,30 @@
+import {
+  FaTemperatureHigh,
+  FaBaby,
+  FaHeartbeat,
+  FaStethoscope,
+  FaHeadSideVirus,
+  FaLungs,
+  FaAllergies,
+  FaUserInjured,
+  FaBrain,
+  FaTooth,
+  FaPoo,
+  FaTint,
+  FaUserNurse,
+} from "react-icons/fa";
+
+export const conditionIconMap = {
+  "Fever": <FaTemperatureHigh className="text-emerald-600 text-2xl" />,
+  "Pregnancy": <FaBaby className="text-emerald-600 text-2xl" />,
+  "High BP": <FaHeartbeat className="text-emerald-600 text-2xl" />,
+  "Piles": <FaPoo className="text-emerald-600 text-2xl" />,
+  "Diarrhea": <FaTint className="text-emerald-600 text-2xl" />,
+  "Flu": <FaHeadSideVirus className="text-emerald-600 text-2xl" />,
+  "Allergy": <FaAllergies className="text-emerald-600 text-2xl" />,
+  "Asthma": <FaLungs className="text-emerald-600 text-2xl" />,
+  "Joint Pain": <FaUserInjured className="text-emerald-600 text-2xl" />,
+  "Migraine": <FaBrain className="text-emerald-600 text-2xl" />,
+  "Anxiety": <FaUserNurse className="text-emerald-600 text-2xl" />,
+  "Cold & Cough": <FaStethoscope className="text-emerald-600 text-2xl" />,
+};
