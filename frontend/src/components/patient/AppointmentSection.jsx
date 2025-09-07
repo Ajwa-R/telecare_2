@@ -1,5 +1,3 @@
-// ✅ Cleaned & Fixed AppointmentSection.jsx
-
 import React, { useState, useEffect } from "react";
 import {
   FaCalendarAlt,
@@ -11,10 +9,10 @@ import { allConditions } from "../../data/conditionsData";
 import { conditionIconMap } from "../../data/conditionIconMapper";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
-import { buildDoctorImage } from "../../utils/img";
+import api from "../../services/api";
 
 const AppointmentSection = ({ onBook }) => {
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+ ;
   const user = useSelector((state) => state.auth.user);
 
   const [selectedDate, setSelectedDate] = useState("");
@@ -26,18 +24,17 @@ const AppointmentSection = ({ onBook }) => {
   const [doctors, setDoctors] = useState([]);
 
   useEffect(() => {
-  fetch(`${API_BASE}/api/doctors`)
-    .then((r) => r.json())
-    .then((list) => {
-      setAllDoctors(list);      // ✅ pehle se tha
-      setDoctors(list);         // ✅ naya (initial render me show karne ke liye)
-    })
-    .catch(() => {
-      setAllDoctors([]);
-      setDoctors([]);
-    });
-}, []);
-
+    (async () => {
+      try {
+        const list = await api.get("/doctors");
+        setAllDoctors(Array.isArray(list) ? list : []);
+        setDoctors(Array.isArray(list) ? list : []);
+      } catch {
+        setAllDoctors([]);
+        setDoctors([]);
+      }
+    })();
+  }, []);
 
   const handleBook = () => {
     if (!selectedDate || !selectedCondition || !selectedDoctor) {
@@ -206,13 +203,10 @@ const AppointmentSection = ({ onBook }) => {
                         transition={{ delay: index * 0.03 }}
                         className="flex items-center p-4 bg-emerald-50 rounded-lg shadow cursor-pointer hover:shadow-lg"
                       >
-                        <img
-                          src={buildDoctorImage(doc, API_BASE)}
-                          onError={(e) => {
-                            e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                              doc?.name || "Doctor"
-                            )}`;
-                          }}
+                         <img
+                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            doc?.name || "Doctor"
+                          )}`}
                           alt={doc?.name || "Doctor"}
                           className="w-14 h-14 rounded-full object-cover mr-3"
                         />

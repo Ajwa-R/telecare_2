@@ -2,8 +2,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import socket, { ensureSocketConnected } from "../../lib/socket";
+import api from "../../services/api";
 
-const API = "http://localhost:5000"; // backend REST for history
 const EVENTS = {
   JOIN: "room:join",
   SEND: "chat:send",
@@ -63,9 +63,9 @@ const ChatPanel = ({ partnerId, partnerName }) => {
   // 4) fetch history when partner changes
   useEffect(() => {
     if (!myId || !partnerId) return;
-    fetch(`${API}/api/chats/${myId}/${partnerId}`)
-      .then((r) => r.json())
-      .then((data) => {
+    (async () => {
+      try {
+        const data = await api.get(`/chats/${myId}/${partnerId}`);
         const out = [];
         const seen = new Set();
         (Array.isArray(data) ? data : []).forEach((m) => {
@@ -78,8 +78,10 @@ const ChatPanel = ({ partnerId, partnerName }) => {
           }
         });
         setMessages(out);
-      })
-      .catch(() => setMessages([]));
+      } catch {
+        setMessages([]);
+      }
+    })();
   }, [myId, partnerId]);
 
   // 5) auto-scroll

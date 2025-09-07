@@ -1,6 +1,8 @@
 // src/pages/AdminDashboard.jsx
 import React, { useEffect, useState } from "react";
-import ReviewsAdmin from "../components/admin/ReviewsAdmin";
+import ReviewsAdmin from "../../components/admin/ReviewsAdmin";
+import api from "../../services/api";
+
 import {
   FaUserMd,
   FaUsers,
@@ -9,11 +11,9 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { useSearchParams } from "react-router-dom";
-import ManagePatient from "../components/admin/ManagePatient";
-import Appoinment from "../components/admin/Appoinment";
-import useAppLogout from "../lib/useAppLogout";
-
-const API_BASE = "http://localhost:5000/api";
+import ManagePatient from "../../components/admin/ManagePatient";
+import Appoinment from "../../components/admin/Appoinment";
+import useAppLogout from "../../lib/useAppLogout";
 
 const AdminDashboard = () => {
   // ===== SAME LOGIC / STATE =====
@@ -32,16 +32,8 @@ const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ===== FETCH HELPERS (unchanged) =====
-  const fetchPending = async () => {
-    const res = await fetch(`${API_BASE}/users/doctors/pending`);
-    if (!res.ok) throw new Error("pending fetch failed");
-    return res.json();
-  };
-  const fetchApproved = async () => {
-    const res = await fetch(`${API_BASE}/users/doctors/approved`);
-    if (!res.ok) throw new Error("approved fetch failed");
-    return res.json();
-  };
+  const fetchPending = async () => await api.get("/users/doctors/pending");
+  const fetchApproved = async () => await api.get("/users/doctors/approved");
 
   // initial Load both lists on mount (unchanged)
   useEffect(() => {
@@ -62,12 +54,7 @@ const AdminDashboard = () => {
   // doctor actions (unchanged)
   const handleApprove = async (id) => {
     try {
-      const res = await fetch(`${API_BASE}/users/doctors/${id}/approve`, {
-        method: "PUT",
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Approve failed");
-
+      const data = await api.put(`/users/doctors/${id}/approve`);
       // Optimistic UI
       setPendingDoctors((prev) => prev.filter((d) => d._id !== id));
       setApprovedDoctors((prev) => [data.doctor, ...prev]);
@@ -82,11 +69,7 @@ const AdminDashboard = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this doctor?")) return;
     try {
-      const res = await fetch(`${API_BASE}/users/doctors/${id}`, {
-        method: "DELETE",
-      });
-    const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Delete failed");
+      const data = await api.delete(`/users/doctors/${id}`);
 
       setPendingDoctors((prev) => prev.filter((d) => d._id !== id));
       setApprovedDoctors((prev) => prev.filter((d) => d._id !== id));
@@ -135,7 +118,9 @@ const AdminDashboard = () => {
               // mobile drawer
               "fixed inset-y-0 left-0 z-50 w-72 md:w-[250px] md:inset-auto md:relative",
               "transition-transform duration-200",
-              sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+              sidebarOpen
+                ? "translate-x-0"
+                : "-translate-x-full md:translate-x-0",
             ].join(" ")}
           >
             {/* Close (mobile) */}
@@ -148,7 +133,10 @@ const AdminDashboard = () => {
 
             <nav className="flex flex-col gap-4">
               <button
-                onClick={() => { setActiveTab("doctors"); setSidebarOpen(false); }}
+                onClick={() => {
+                  setActiveTab("doctors");
+                  setSidebarOpen(false);
+                }}
                 className={`text-left capitalize font-semibold tracking-wide px-4 py-3 rounded-xl transition ${
                   activeTab === "doctors" ? "bg-white/15" : "hover:bg-white/10"
                 }`}
@@ -159,7 +147,10 @@ const AdminDashboard = () => {
               </button>
 
               <button
-                onClick={() => { setActiveTab("patients"); setSidebarOpen(false); }}
+                onClick={() => {
+                  setActiveTab("patients");
+                  setSidebarOpen(false);
+                }}
                 className={`text-left capitalize font-semibold tracking-wide px-4 py-3 rounded-xl transition ${
                   activeTab === "patients" ? "bg-white/15" : "hover:bg-white/10"
                 }`}
@@ -170,19 +161,26 @@ const AdminDashboard = () => {
               </button>
 
               <button
-  onClick={() => { setActiveTab("appointments"); setSidebarOpen(false); }}
-  className={`text-left capitalize font-semibold tracking-wide px-4 py-3 rounded-xl transition ${
-    activeTab === "appointments" ? "bg-white/15" : "hover:bg-white/10"
-  }`}
->
-  <span className="flex items-center gap-3">
-    <FaCalendarAlt /> appointments
-  </span>
-</button>
-
+                onClick={() => {
+                  setActiveTab("appointments");
+                  setSidebarOpen(false);
+                }}
+                className={`text-left capitalize font-semibold tracking-wide px-4 py-3 rounded-xl transition ${
+                  activeTab === "appointments"
+                    ? "bg-white/15"
+                    : "hover:bg-white/10"
+                }`}
+              >
+                <span className="flex items-center gap-3">
+                  <FaCalendarAlt /> appointments
+                </span>
+              </button>
 
               <button
-                onClick={() => { setActiveTab("reviews"); setSidebarOpen(false); }}
+                onClick={() => {
+                  setActiveTab("reviews");
+                  setSidebarOpen(false);
+                }}
                 className={`text-left capitalize font-semibold tracking-wide px-4 py-3 rounded-xl transition ${
                   activeTab === "reviews" ? "bg-white/15" : "hover:bg-white/10"
                 }`}
@@ -193,7 +191,10 @@ const AdminDashboard = () => {
               </button>
 
               <button
-                onClick={() => { setActiveTab("settings"); setSidebarOpen(false); }}
+                onClick={() => {
+                  setActiveTab("settings");
+                  setSidebarOpen(false);
+                }}
                 className={`text-left capitalize font-semibold tracking-wide px-4 py-3 rounded-xl transition ${
                   activeTab === "settings" ? "bg-white/15" : "hover:bg-white/10"
                 }`}
@@ -206,9 +207,9 @@ const AdminDashboard = () => {
               <div className="h-px bg-white/20 my-2" />
 
               <button
-   onClick={doLogout}
-   className="text-left capitalize font-semibold tracking-wide px-4 py-3 rounded-xl hover:bg-white/10 transition"
- >
+                onClick={doLogout}
+                className="text-left capitalize font-semibold tracking-wide px-4 py-3 rounded-xl hover:bg-white/10 transition"
+              >
                 <span className="flex items-center gap-3">
                   <FaSignOutAlt /> logout
                 </span>
@@ -226,126 +227,143 @@ const AdminDashboard = () => {
 
           {/* Content */}
           <main className="flex-1 min-w-0">
+            {/* DOCTORS */}
+            {activeTab === "doctors" && (
+              <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
+                <h2 className="text-lg md:text-xl font-semibold mb-4">
+                  Manage Doctors
+                </h2>
 
-  {/* DOCTORS */}
-  {activeTab === "doctors" && (
-    <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
-      <h2 className="text-lg md:text-xl font-semibold mb-4">Manage Doctors</h2>
+                {/* Toggle Pending / Approved (UNCHANGED) */}
+                <div className="mb-4 flex gap-3">
+                  <button
+                    onClick={() => setDoctorView("pending")}
+                    className={`px-4 py-2 rounded-lg border transition ${
+                      doctorView === "pending"
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-gray-100 hover:bg-gray-200 border-gray-200"
+                    }`}
+                  >
+                    Pending ({pendingDoctors.length})
+                  </button>
+                  <button
+                    onClick={() => setDoctorView("approved")}
+                    className={`px-4 py-2 rounded-lg border transition ${
+                      doctorView === "approved"
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-gray-100 hover:bg-gray-200 border-gray-200"
+                    }`}
+                  >
+                    Approved ({approvedDoctors.length})
+                  </button>
+                </div>
 
-      {/* Toggle Pending / Approved (UNCHANGED) */}
-      <div className="mb-4 flex gap-3">
-        <button
-          onClick={() => setDoctorView("pending")}
-          className={`px-4 py-2 rounded-lg border transition ${
-            doctorView === "pending"
-              ? "bg-emerald-600 text-white border-emerald-600"
-              : "bg-gray-100 hover:bg-gray-200 border-gray-200"
-          }`}
-        >
-          Pending ({pendingDoctors.length})
-        </button>
-        <button
-          onClick={() => setDoctorView("approved")}
-          className={`px-4 py-2 rounded-lg border transition ${
-            doctorView === "approved"
-              ? "bg-emerald-600 text-white border-emerald-600"
-              : "bg-gray-100 hover:bg-gray-200 border-gray-200"
-          }`}
-        >
-          Approved ({approvedDoctors.length})
-        </button>
-      </div>
-
-      {/* Doctors Table (UNCHANGED) */}
-      <div className="overflow-x-auto rounded-xl border border-emerald-200">
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr className="bg-emerald-100 text-left">
-              <th className="py-3 px-4">Name</th>
-              <th className="py-3 px-4">Specialization</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td className="py-4 px-4" colSpan={4}>
-                  Loading...
-                </td>
-              </tr>
-            ) : (doctorView === "pending" ? pendingDoctors : approvedDoctors).length === 0 ? (
-              <tr>
-                <td className="py-4 px-4" colSpan={4}>
-                  No records
-                </td>
-              </tr>
-            ) : (
-              (doctorView === "pending" ? pendingDoctors : approvedDoctors).map((doc) => (
-                <tr key={doc._id} className="border-t hover:bg-gray-50">
-                  <td className="py-2 px-4">{doc.name}</td>
-                  <td className="py-2 px-4">{doc.specialization || "-"}</td>
-                  <td className="py-2 px-4">
-                    {doctorView === "approved" ? (
-                      <span className="text-green-600 font-semibold">Approved</span>
-                    ) : (
-                      <span className="text-yellow-700 font-semibold">Pending</span>
-                    )}
-                  </td>
-                  <td className="py-2 px-4 space-x-2">
-                    {doctorView === "pending" && (
-                      <button
-                        onClick={() => handleApprove(doc._id)}
-                        className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700"
-                      >
-                        Approve
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleDelete(doc._id)}
-                      className="bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
+                {/* Doctors Table (UNCHANGED) */}
+                <div className="overflow-x-auto rounded-xl border border-emerald-200">
+                  <table className="min-w-full bg-white">
+                    <thead>
+                      <tr className="bg-emerald-100 text-left">
+                        <th className="py-3 px-4">Name</th>
+                        <th className="py-3 px-4">Specialization</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loading ? (
+                        <tr>
+                          <td className="py-4 px-4" colSpan={4}>
+                            Loading...
+                          </td>
+                        </tr>
+                      ) : (doctorView === "pending"
+                          ? pendingDoctors
+                          : approvedDoctors
+                        ).length === 0 ? (
+                        <tr>
+                          <td className="py-4 px-4" colSpan={4}>
+                            No records
+                          </td>
+                        </tr>
+                      ) : (
+                        (doctorView === "pending"
+                          ? pendingDoctors
+                          : approvedDoctors
+                        ).map((doc) => (
+                          <tr
+                            key={doc._id}
+                            className="border-t hover:bg-gray-50"
+                          >
+                            <td className="py-2 px-4">{doc.name}</td>
+                            <td className="py-2 px-4">
+                              {doc.specialization || "-"}
+                            </td>
+                            <td className="py-2 px-4">
+                              {doctorView === "approved" ? (
+                                <span className="text-green-600 font-semibold">
+                                  Approved
+                                </span>
+                              ) : (
+                                <span className="text-yellow-700 font-semibold">
+                                  Pending
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2 px-4 space-x-2">
+                              {doctorView === "pending" && (
+                                <button
+                                  onClick={() => handleApprove(doc._id)}
+                                  className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700"
+                                >
+                                  Approve
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDelete(doc._id)}
+                                className="bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )}
 
-  {/* PATIENTS */}
-  {activeTab === "patients" && (
-    <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
-      <ManagePatient />
-    </div>
-  )}
+            {/* PATIENTS */}
+            {activeTab === "patients" && (
+              <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
+                <ManagePatient />
+              </div>
+            )}
 
-  {/* APPOINTMENTS (Today) */}
-  {activeTab === "appointments" && (
-   <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
-     <Appoinment dateFilter="today" doctors={approvedDoctors} />
-   </div>
- )}
+            {/* APPOINTMENTS (Today) */}
+            {activeTab === "appointments" && (
+              <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
+                <Appoinment dateFilter="today" doctors={approvedDoctors} />
+              </div>
+            )}
 
-  {/* REVIEWS */}
-  {activeTab === "reviews" && (
-    <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
-      <ReviewsAdmin />
-    </div>
-  )}
+            {/* REVIEWS */}
+            {activeTab === "reviews" && (
+              <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
+                <ReviewsAdmin />
+              </div>
+            )}
 
-  {/* (Optional) SETTINGS placeholder */}
-  {activeTab === "settings" && (
-    <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
-      <div className="text-sm text-gray-600">Settings coming soon…</div>
-    </div>
-  )}
-</main>
-
+            {/* (Optional) SETTINGS placeholder */}
+            {activeTab === "settings" && (
+              <div className="bg-white rounded-2xl md:rounded-3xl shadow-md p-6 md:p-7">
+                <div className="text-sm text-gray-600">
+                  Settings coming soon…
+                </div>
+              </div>
+            )}
+          </main>
         </div>
       </div>
     </div>
@@ -353,10 +371,6 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
-
-
-
 
 // // src/pages/AdminDashboard.jsx
 // import React, { useEffect, useState } from "react";

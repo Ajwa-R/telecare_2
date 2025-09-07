@@ -1,7 +1,6 @@
 // src/components/admin/Appoinment.jsx
 import React, { useEffect, useMemo, useState } from "react";
-
-const API_BASE = "http://localhost:5000/api";
+import api from "../../services/api";
 
 function isSameLocalDay(isoOrDate, ref = new Date()) {
   if (!isoOrDate) return false;
@@ -19,27 +18,14 @@ export default function Appoinment({ dateFilter = "today", doctors = [] }) {
 
     async function load() {
       setLoading(true);
-      const token =
-        localStorage.getItem("token") ||
-        localStorage.getItem("authToken") ||
-        "";
-      const headers = {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      };
-
-      // ✅ Fallback: aggregate per-doctor appointments (this endpoint exists in your app)
+      //  Fallback: aggregate per-doctor appointments (this endpoint exists in your app)
       let merged = [];
       if (Array.isArray(doctors) && doctors.length > 0) {
         for (const doc of doctors) {
           const id = doc?._id || doc?.id;
           if (!id) continue;
           try {
-            const r = await fetch(`${API_BASE}/appointments/doctor/${id}`, {
-              headers,
-            });
-            if (!r.ok) continue;
-            const body = await r.json();
+            const body = await api.get(`/appointments/doctor/${id}`);
             const list = Array.isArray(body) ? body : [];
             merged = merged.concat(list);
           } catch {
@@ -98,7 +84,9 @@ export default function Appoinment({ dateFilter = "today", doctors = [] }) {
         <div className="text-gray-600 text-sm">Loading…</div>
       ) : items.length === 0 ? (
         <div className="text-gray-600 text-sm">
-          {doctors?.length ? "No appointments for today." : "No approved doctors found."}
+          {doctors?.length
+            ? "No appointments for today."
+            : "No approved doctors found."}
         </div>
       ) : (
         <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

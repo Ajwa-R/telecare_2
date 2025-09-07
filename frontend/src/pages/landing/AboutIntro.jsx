@@ -1,9 +1,9 @@
 import { FaChevronDown } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import aboutVideo from '../assets/about-bg.mp4'; 
-import MissionSection from '../components/sections/about/MissionSection';
-import HowItWorksSection from '../components/sections/about/HowItWorksSection';
-import WhyChooseUsSection from '../components/sections/about/WhyChooseUsSection';
+import aboutVideo from '../../assets/about-bg.mp4'
+import MissionSection from '../../components/landingPage/about/MissionSection';
+import HowItWorksSection from '../../components/landingPage/about/HowItWorksSection';
+import WhyChooseUsSection from "../../components/landingPage/about/WhyChooseUsSection"
 const AboutIntro = () => {
   const scrollToSection = () => {
     const target = document.getElementById('mission');

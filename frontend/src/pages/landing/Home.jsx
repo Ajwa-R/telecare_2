@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import Navbar from "../components/common/Navbar";
-import DoctorCategories from "../components/sections/home/DoctorCategories";
-import ConditionCategorySection from "../components/sections/home/ConditionCategorySection";
-import TestimonialsSection from "../components/sections/home/TestimonialsSection";
+import Navbar from '../../components/common/Navbar';
+import DoctorCategories from "../../components/landingPage/home/DoctorCategories";
+import ConditionCategorySection from "../../components/landingPage/home/ConditionCategorySection";
+import TestimonialsSection from "../../components/landingPage/home/TestimonialsSection";
 import { motion } from "framer-motion";
-import phoneGroup from "../assets/phone-group.png";
+import phoneGroup from "../../assets/phone-group.png";
 const Home = () => {
   const [text, setText] = useState("");
   const fullText = "TeleCare — Healing Powered by Technology";

@@ -1,17 +1,17 @@
 // frontend/src/pages/PatientDashboard.jsx
 import React, { useState, useEffect } from "react";
 
-import AppointmentSection from "../components/patient/AppointmentSection";
-import MyDoctor from "../components/patient/MyDoctor";
-import ChatPanel from "../components/patient/ChatPanel";
-import MedicalHistory from "../components/patient/MedicalHistory";
-import FamilySubscription from "../components/patient/FamilySubscription";
-import socket, { ensureSocketConnected } from "../lib/socket";
-import VideoCallButton from "../components/video/VideoCallButton";
-import useApptSoonToast from "../lib/useApptSoonToast";
-import useAppLogout from "../lib/useAppLogout";
+import AppointmentSection from "../../components/patient/AppointmentSection";
+import MyDoctor from "../../components/patient/MyDoctor";
+import ChatPanel from "../../components/patient/ChatPanel";
+import MedicalHistory from "../../components/patient/MedicalHistory";
+import FamilySubscription from "../../components/patient/FamilySubscription";
+import socket, { ensureSocketConnected } from "../../lib/socket";
+import api from "../../services/api";
+import VideoCallButton from "../../components/video/VideoCallButton";
+import useApptSoonToast from "../../lib/useApptSoonToast";
+import useAppLogout from "../../lib/useAppLogout";
 import { useSearchParams } from "react-router-dom";
-
 
 import {
   FaUserMd,
@@ -25,11 +25,9 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import logo from "../assets/logo.png";
+import logo from '../../assets/logo.png';
 
 const PatientDashboard = () => {
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
   const doLogout = useAppLogout();
 
   const [params, setParams] = useSearchParams();
@@ -49,10 +47,7 @@ const PatientDashboard = () => {
   const loadUpcomingList = async () => {
     if (!user?._id) return;
     try {
-      const r = await fetch(
-        `${API_BASE}/api/appointments/upcoming-all/${user._id}`
-      );
-      setUpcomingList(r.ok ? await r.json() : []);
+      setUpcomingList(await api.get(`/appointments/upcoming-all/${user._id}`));
     } catch {
       setUpcomingList([]);
     }
@@ -93,12 +88,8 @@ const PatientDashboard = () => {
   // Load nearest upcoming appointment
   useEffect(() => {
     if (!user?._id) return;
-    fetch(`${API_BASE}/api/appointments/upcoming/${user._id}`)
-      .then(async (res) => {
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error("Fetch error");
-        return res.json();
-      })
+    api
+      .get(`/appointments/upcoming/${user._id}`)
       .then((data) =>
         setLatestAppointment(
           data ? { ...data, startAt: data.startAt || data.date } : null
@@ -130,29 +121,18 @@ const PatientDashboard = () => {
 
   const handleBookAppointment = async (appointmentData) => {
     try {
-      const res = await fetch(`${API_BASE}/api/appointments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(appointmentData),
-      });
-      if (!res.ok) throw new Error("Failed to book");
-      const data = await res.json();
+      const data = await api.post(`/appointments`, appointmentData);
       console.log("✅ Appointment booked:", data);
       alert("Appointment booked successfully!");
 
       // refresh nearest upcoming
-      const upRes = await fetch(
-        `${API_BASE}/api/appointments/upcoming/${user._id}`
-      );
-      if (upRes.status === 404) {
-        setLatestAppointment(null);
-      } else if (upRes.ok) {
-        const up = await upRes.json();
+      try {
+        const up = await api.get(`/appointments/upcoming/${user._id}`);
         setLatestAppointment(
           up ? { ...up, startAt: up.startAt || up.date } : null
         );
-      } else {
-        throw new Error("Upcoming fetch failed");
+      } catch {
+        setLatestAppointment(null);
       }
 
       // 🔹 ALSO refresh the list of all upcoming
@@ -225,7 +205,7 @@ const PatientDashboard = () => {
               label="Chat"
               onClick={() => setActive("chat")}
             />
-            <SidebarItem icon={<FaVideo />} label="Video Call" />
+            {/* <SidebarItem icon={<FaVideo />} label="Video Call" /> */}
             <SidebarItem
               icon={<FaHistory />}
               label="Medical History"
@@ -348,4 +328,3 @@ const PatientDashboard = () => {
 };
 
 export default PatientDashboard;
-

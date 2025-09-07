@@ -1,26 +1,24 @@
 import React, { useEffect, useState } from "react";
+import api from "../../services/api";
 
 export default function ReviewsAdmin() {
-  const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
-  const token = localStorage.getItem("token") || "";
   const [items, setItems] = useState([]);
-  const load = () =>
-    fetch(`${API}/api/reviews/admin`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json()).then(setItems).catch(()=>setItems([]));
+   const load = async () => {
+    try {
+      const data = await api.get("/reviews/admin"); // after Patch-1 this IS the list
+      setItems(Array.isArray(data) ? data : (data?.items || []));
+    } catch {
+      setItems([]);
+    }
+  }
 
   useEffect(() => { load(); }, []);
 
-  const approve = async (id) => {
-    await fetch(`${API}/api/reviews/${id}/approve`, { method:"PATCH", headers:{ Authorization:`Bearer ${token}` }});
-    load();
-  };
-  const unapprove = async (id) => {
-    await fetch(`${API}/api/reviews/${id}/reject`, { method:"PATCH", headers:{ Authorization:`Bearer ${token}` }});
-    load();
-  };
+const approve = async (id) => { await api.patch(`/reviews/${id}/approve`); load(); };
+  const unapprove = async (id) => { await api.patch(`/reviews/${id}/reject`); load(); };
   const remove = async (id) => {
     if (!confirm("Delete review?")) return;
-    await fetch(`${API}/api/reviews/${id}`, { method:"DELETE", headers:{ Authorization:`Bearer ${token}` }});
+   await api.delete(`/reviews/${id}`);
     load();
   };
 

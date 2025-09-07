@@ -1,9 +1,9 @@
 import { FaChevronDown } from "react-icons/fa";
 import { motion } from "framer-motion";
-import serviceVideo from "../assets/service1.mp4";
-import ServiceCardsSection from "../components/sections/services/service1/ServiceCardsSection";
-import AdvancedFeaturesSection from "../components/sections/services/service2/AdvancedFeaturesSection";
-import AdditionalBenefitsSection from "../components/sections/services/service3/AdditionalBenefitsSection";
+import serviceVideo from "../../assets/service1.mp4"
+import ServiceCardsSection from "../../components/landingPage/services/service1/ServiceCardsSection"
+import AdvancedFeaturesSection from "../../components/landingPage/services/service2/AdvancedFeaturesSection";
+import AdditionalBenefitsSection from "../../components/landingPage/services/service3/AdditionalBenefitsSection";
 const ServicesIntro = () => {
   const scrollToSection = () => {
     const target = document.getElementById("our-services");

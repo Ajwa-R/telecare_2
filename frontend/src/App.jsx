@@ -1,26 +1,24 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/common/Layout";
-import Home from "./pages/Home";
-import AboutIntro from "./pages/AboutIntro";
-import ServicesIntro from "./pages/ServicesIntro";
-import Register from "./pages/Register";
+import Home from  "./pages/landing/Home"
+import AboutIntro from "./pages/landing/AboutIntro"
+import ServicesIntro from "./pages/landing/ServicesIntro";
+import Register from './pages/Register';
 import Login from "./pages/Login";
-import MentalIntro from "./components/sections/services/service1/mental/MentalIntro";
-import HeroSection from "./components/sections/services/service1/chat/HeroSection";
-import HeroSectionAPP from "./components/sections/services/service1/appointment/HeroSectionAPP";
-import VideoConsultationSection from "./components/sections/services/service3/videocall/VideoConsultationSection";
-import MobileAppSection from "./components/sections/services/service3/MobileApp/MobileAppSection";
-import SecureMessagingSection from "./components/sections/services/service3/secure/SecureMessagingSection";
-import ChatSupportSection from "./components/sections/services/service3/chatSupport/ChatSupportSection";
+import MentalIntro from "./components/landingPage/services/service1/mental/MentalIntro"
+import HeroSection from "./components/landingPage/services/service1/chat/HeroSection";
+import HeroSectionAPP from "./components/landingPage/services/service1/appointment/HeroSectionAPP";
+import VideoConsultationSection from "./components/landingPage/services/service3/videocall/VideoConsultationSection";
+import MobileAppSection from "./components/landingPage/services/service3/MobileApp/MobileAppSection";
+import SecureMessagingSection from "./components/landingPage/services/service3/secure/SecureMessagingSection";
+import ChatSupportSection from "./components/landingPage/services/service3/chatSupport/ChatSupportSection";
 
 import { useSelector } from "react-redux"; //use selctor
-import PatientDashboard from "./pages/PatientDashboard";
-import DoctorDashboard from "./pages/DoctorDashboard";
+import PatientDashboard from './pages/patient/PatientDashboard';
+import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import PrivateRoute from "./components/common/PrivateRoute";
 import DoctorList from "./pages/DoctorList";
-
-import AdminDashboard from "./pages/AdminDashboard";
-// import CallRoom from "./pages/CallRoom";
+import AdminDashboard from './pages/admin/AdminDashboard';
 import CallPage from "./pages/CallPage";
 function App() {
   const user = useSelector((state) => state.auth.user);

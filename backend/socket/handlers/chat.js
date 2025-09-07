@@ -1,35 +1,41 @@
 // socket/handlers/chat.js
-const Message = require("../../models/Message"); // your Mongoose model
+const Message = require('../../models/Message');
 
-// event names are namespaced to avoid collisions
 const EVENTS = {
-  JOIN: "room:join",
-  SEND: "chat:send",
-  RECV: "chat:receive",
+  JOIN: 'room:join',
+  SEND: 'chat:send',
+  RECV: 'chat:receive',
+  ERROR: 'error',
 };
 
 module.exports = (io, socket) => {
-  // client can also explicitly join another room
-  socket.on(EVENTS.JOIN, (roomId) => socket.join(roomId));
+  // Optional explicit room join (e.g., user profile room)
+  socket.on(EVENTS.JOIN, (id) => {
+    const rid = String(id || '').trim();
+    if (rid) socket.join(`user:${rid}`);
+  });
 
-  socket.on(EVENTS.SEND, async (payload) => {
-    // payload: { senderId, receiverId, text }
+  // Secure send: senderId comes from cookie-JWT (socket.data.userId), not client payload
+  socket.on(EVENTS.SEND, async (payload = {}) => {
     try {
-      // persist message
-      const saved = await Message.create({
-        senderId: payload.senderId,
-        receiverId: payload.receiverId,
-        text: payload.text,
-      });
+      const senderId = socket.data.userId; // set in socket/index.js auth middleware
+      const receiverId = String(payload.receiverId || '').trim();
+      const text = String(payload.text || '').trim();
 
-      // emit to receiver’s personal room
-      io.to(payload.receiverId).emit(EVENTS.RECV, saved);
+      if (!senderId) {
+        return socket.emit(EVENTS.ERROR, { scope: 'auth', message: 'Unauthenticated' });
+      }
+      if (!receiverId || !text) return; // silently ignore bad payload
 
-      // also echo back to sender (so both sides have DB-formatted object)
-      socket.emit(EVENTS.RECV, saved);
+      // persist
+      const saved = await Message.create({ senderId, receiverId, text });
+
+      // fanout to both personal rooms
+      io.to(`user:${receiverId}`).emit(EVENTS.RECV, saved);
+      io.to(`user:${senderId}`).emit(EVENTS.RECV, saved); // echo to sender
     } catch (e) {
-      console.error("chat send error:", e.message);
-      socket.emit("error", { scope: "chat", message: "Failed to send" });
+      console.error('chat:send error:', e);
+      socket.emit(EVENTS.ERROR, { scope: 'chat', message: 'Failed to send' });
     }
   });
 };

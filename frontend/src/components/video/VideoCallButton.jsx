@@ -34,7 +34,8 @@ export default function VideoCallButton({ appointment }) {
     return `Expired`;
   })();
 
-  const go = () => navigate(`/call/${appointment._id}`);
+  const
+   go = () => navigate(`/call/${appointment._id}`);
 
   return (
     <button
@@ -52,41 +53,3 @@ export default function VideoCallButton({ appointment }) {
 
 
 
-
-// import { useNavigate } from "react-router-dom";
-// import React, { useEffect, useMemo, useState } from "react";
-
-// const withinWindow = (startAt) => {
-//   const start = new Date(startAt).getTime();
-//   const now = Date.now();
-//   const diff = Math.abs(start - now);
-//   return diff <= 15 * 60 * 1000; // 15 minutes window
-// };
-
-
-// export default function VideoCallButton({ appointment, isAllowed }) {
-//   const navigate = useNavigate();
-
-//   if (!appointment?._id || !appointment?.startAt) return null;
-
-//   // ✅ Fallback logic if `isAllowed` not passed as prop
-//   const allowed = typeof isAllowed === "boolean"
-//     ? isAllowed
-//     : withinWindow(appointment.startAt);
-
-//   const onJoin = () => allowed
-//     ? navigate(`/call/${appointment._id}`)
-//     : alert("Call window not open yet.");
-
-//   return (
-//     <button
-//       onClick={onJoin}
-//       className={`ml-2 px-3 py-1 rounded text-white ${
-//         allowed ? "bg-emerald-600 hover:bg-emerald-700" : "bg-gray-500 cursor-not-allowed"
-//       }`}
-//       disabled={!allowed}
-//     >
-//       {allowed ? "Join Video Call" : "Call Not Open"}
-//     </button>
-//   );
-// }

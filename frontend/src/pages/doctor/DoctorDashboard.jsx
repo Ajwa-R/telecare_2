@@ -1,15 +1,23 @@
 // src/pages/DoctorDashboard.jsx (responsive rev A)
 import React, { useEffect, useState, useMemo, useRef } from "react";
-import PrescriptionForm from "../components/doctor/PrescriptionForm";
-import { FaCalendarAlt, FaUserInjured, FaVideo, FaUserEdit, FaBars } from "react-icons/fa";
+import PrescriptionForm from "../../components/doctor/PrescriptionForm";
+import {
+  FaCalendarAlt,
+  FaUserInjured,
+  FaVideo,
+  FaUserEdit,
+  FaBars,
+} from "react-icons/fa";
 import { useSelector } from "react-redux";
-import DocHeader from "../components/doctor/DocHeader";
-import ChatPanel from "../components/patient/ChatPanel"; // reuse component
-import VideoCallButton from "../components/video/VideoCallButton";
+import DocHeader from "../../components/doctor/DocHeader";
+import ChatPanel from "../../components/patient/ChatPanel"; // reuse component
+import VideoCallButton from "../../components/video/VideoCallButton";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import io from "socket.io-client";
-import useApptSoonToast from "../lib/useApptSoonToast";
-import useAppLogout from "../lib/useAppLogout";
+import useApptSoonToast from "../../lib/useApptSoonToast";
+import useAppLogout from "../../lib/useAppLogout";
+import api from "../../services/api";
+import { API_BASE } from "@/app/config";
 
 const DoctorDashboard = () => {
   const doLogout = useAppLogout();
@@ -35,15 +43,18 @@ const DoctorDashboard = () => {
   useEffect(() => {
     if (!user?._id) return;
 
-    fetch(`http://localhost:5000/api/appointments/doctor/${user._id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : [];
+    (async () => {
+      try {
+        const list = await api.get(`/appointments/doctor/${user._id}`);
+        const safe = Array.isArray(list) ? list : [];
         setAppointments(
-          list.map((a) => ({ ...a, startAt: a.startAt || a.date })) // normalize
+          safe.map((a) => ({ ...a, startAt: a.startAt || a.date }))
         );
-      })
-      .catch((err) => console.error("Failed to fetch appointments", err));
+      } catch (err) {
+        console.error("Failed to fetch appointments", err);
+        setAppointments([]);
+      }
+    })();
   }, [user?._id]); //  precise dep
 
   const todayStr = new Date().toDateString();
@@ -62,7 +73,7 @@ const DoctorDashboard = () => {
 
     const now = new Date();
     const future = appointments
-      .map((a) => (a?.startAt ? new Date(a.startAt) : null))
+      .map((a) => (a?.startAt ? new Date(a.startAt) : null)) //samjhnA HA
       .filter((d) => d && d >= now)
       .sort((a, b) => a - b);
 
@@ -93,7 +104,7 @@ const DoctorDashboard = () => {
   );
 
   useApptSoonToast((msg) => {
-    // TODO: replace with your toast lib
+    // replace with your toast lib
     if (typeof window !== "undefined") alert(msg);
   });
 
@@ -103,19 +114,18 @@ const DoctorDashboard = () => {
     ringSocketsRef.current.forEach((s) => s.disconnect());
     ringSocketsRef.current = [];
 
-    const token = localStorage.getItem("token");
-    const base = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const base = API_BASE;
 
     todayList.forEach((appt) => {
       if (!appt?._id) return;
 
       const socket = io(`${base}/ws/video`, {
         path: "/socket.io",
-        auth: { token, appointmentId: appt._id },
+        auth: { appointmentId: appt._id }, // cookie is sent automatically; pass appointmentId only
         transports: ["websocket"],
       });
 
-      socket.on("call:ringing", ({ appointmentId }) => {
+      socket.on("call:ring", ({ appointmentId }) => {
         setIncoming({ appointmentId });
       });
 
@@ -181,8 +191,12 @@ const DoctorDashboard = () => {
               <div className="flex items-center gap-4">
                 <FaCalendarAlt className="text-2xl sm:text-3xl text-emerald-600 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-gray-500">Today's Appointments</p>
-                  <p className="text-lg sm:text-xl font-bold">{todayList.length}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    Today's Appointments
+                  </p>
+                  <p className="text-lg sm:text-xl font-bold">
+                    {todayList.length}
+                  </p>
                 </div>
               </div>
             </div>
@@ -191,8 +205,12 @@ const DoctorDashboard = () => {
               <div className="flex items-center gap-4">
                 <FaUserInjured className="text-2xl sm:text-3xl text-blue-500 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-gray-500">Total Patients</p>
-                  <p className="text-lg sm:text-xl font-bold">{uniquePatients}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    Total Patients
+                  </p>
+                  <p className="text-lg sm:text-xl font-bold">
+                    {uniquePatients}
+                  </p>
                 </div>
               </div>
             </div>
@@ -201,8 +219,12 @@ const DoctorDashboard = () => {
               <div className="flex items-center gap-4">
                 <FaVideo className="text-2xl sm:text-3xl text-purple-500 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-gray-500">Upcoming Call</p>
-                  <p className="text-lg sm:text-xl font-bold truncate">{upcomingLabel}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    Upcoming Call
+                  </p>
+                  <p className="text-lg sm:text-xl font-bold truncate">
+                    {upcomingLabel}
+                  </p>
                 </div>
               </div>
             </div>
@@ -212,7 +234,9 @@ const DoctorDashboard = () => {
                 <FaUserEdit className="text-2xl sm:text-3xl text-yellow-600 shrink-0" />
                 <div className="min-w-0">
                   <p className="text-xs sm:text-sm text-gray-500">Status</p>
-                  <p className="text-lg sm:text-xl font-bold">{user?.status || "Online"}</p>
+                  <p className="text-lg sm:text-xl font-bold">
+                    {user?.status || "Online"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -221,30 +245,47 @@ const DoctorDashboard = () => {
           {/* Today appointments */}
           <section className="bg-white shadow-sm border rounded-2xl p-4 sm:p-6">
             <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="text-base sm:text-xl font-semibold">Today’s Appointments</h2>
+              <h2 className="text-base sm:text-xl font-semibold">
+                Today’s Appointments
+              </h2>
               {/* space for filters on md+ later */}
             </div>
 
             {todayList.length === 0 ? (
-              <p className="text-sm text-gray-500">No appointments for today.</p>
+              <p className="text-sm text-gray-500">
+                No appointments for today.
+              </p>
             ) : (
               <ul className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 {todayList.map((appt) => {
                   const appointmentTime = new Date(appt.startAt);
                   const now = new Date();
                   const isDoctorCallAllowed =
-                    now.getTime() >= appointmentTime.getTime() - 5 * 60 * 1000 &&
+                    now.getTime() >=
+                      appointmentTime.getTime() - 5 * 60 * 1000 &&
                     now.getTime() <= appointmentTime.getTime() + 30 * 60 * 1000;
 
-                    const patientName = appt.patientName || appt?.patientId?.name || appt?.patientId;
+                  const patientName =
+                    appt.patientName ||
+                    appt?.patientId?.name ||
+                    appt?.patientId;
 
                   return (
-                    <li key={appt._id} className="border rounded-2xl p-4 shadow-sm hover:shadow-md transition bg-white">
+                    <li
+                      key={appt._id}
+                      className="border rounded-2xl p-4 shadow-sm hover:shadow-md transition bg-white"
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="font-semibold truncate">Patient: {patientName}</p>
-                          <p className="text-sm text-gray-600">{appointmentTime.toLocaleString()}</p>
-                          <p className="text-sm text-gray-600">Condition: {appt.condition}</p>
+                          <p className="font-semibold truncate">
+                            Patient: {patientName}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {appointmentTime.toLocaleString()}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Condition: {appt.condition}
+                          </p>
                         </div>
                       </div>
 
@@ -285,7 +326,10 @@ const DoctorDashboard = () => {
             {showChat && (
               <div className="mt-6">
                 {/* Chat panel stacks naturally; full-width on mobile */}
-                <ChatPanel partnerId={chatPartner.id} partnerName={chatPartner.name} />
+                <ChatPanel
+                  partnerId={chatPartner.id}
+                  partnerName={chatPartner.name}
+                />
               </div>
             )}
           </section>
@@ -316,9 +360,7 @@ const DoctorDashboard = () => {
       {/* Prescription modal */}
       {showRxForm && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-3">
-          <div
-            className="bg-white w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl p-4 shadow-xl max-h-[90vh] overflow-y-auto"
-          >
+          <div className="bg-white w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl p-4 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-3">
               <div className="text-lg font-semibold">Prescription</div>
               <button

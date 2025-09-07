@@ -16,10 +16,10 @@ export default function MedicalHistory() {
       try {
         setLoading(true);
         // axios instance already points to .../api
-        const { data } = await api.get(`/prescriptions/patient/${user._id}`);
+        const data = await api.get(`/prescriptions/patient/${user._id}`);
         setItems(Array.isArray(data) ? data : []);
       } catch (e) {
-        setErr(e.response?.data?.message || e.message || "Failed to load");
+        setErr(e.message || "Failed to load");
       } finally {
         setLoading(false);
       }

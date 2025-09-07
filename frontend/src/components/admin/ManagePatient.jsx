@@ -1,5 +1,6 @@
 // src/components/admin/ManagePatient.jsx
 import React, { useEffect, useState } from "react";
+import api from "../../services/api";
 
 const API_BASE = "http://localhost:5000/api";
 
@@ -13,20 +14,15 @@ export default function ManagePatient() {
     async function load() {
       setLoading(true);
       try {
-        // Adjust to your backend: /users/patients OR /patients
-        const urls = [
-          `${API_BASE}/users/patients`,
-          `${API_BASE}/patients`,
-        ];
         let data = [];
-        for (const u of urls) {
+        try {
+          data = await api.get("/users/patients");
+        } catch {
           try {
-            const r = await fetch(u);
-            if (r.ok) {
-              data = await r.json();
-              break;
-            }
-          } catch {}
+            data = await api.get("/patients");
+          } catch {
+            data = [];
+          }
         }
         if (!Array.isArray(data)) data = [];
         const normalized = data.map((p) => ({
@@ -43,7 +39,9 @@ export default function ManagePatient() {
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

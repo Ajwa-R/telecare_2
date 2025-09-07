@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
@@ -9,7 +8,7 @@ const DoctorList = () => {
     const fetchDoctors = async () => {
       try {
         const res = await api.get("/doctors");
-        setDoctors(res.data);
+        setDoctors(Array.isArray(res) ? res : res?.items || []);
       } catch (err) {
         console.error("Failed to fetch doctors", err);
       }
