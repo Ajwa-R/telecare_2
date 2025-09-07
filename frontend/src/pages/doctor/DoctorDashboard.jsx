@@ -92,7 +92,7 @@ const DoctorDashboard = () => {
     return { todayList, uniquePatients: uniq, upcomingLabel: label };
   }, [appointments, todayStr]);
 
-  // ✅ Build stats for DocHeader
+  //  Build stats for DocHeader
   const stats = useMemo(
     () => ({
       todayCount: todayList.length,
@@ -104,7 +104,6 @@ const DoctorDashboard = () => {
   );
 
   useApptSoonToast((msg) => {
-    // replace with your toast lib
     if (typeof window !== "undefined") alert(msg);
   });
 
@@ -385,7 +384,6 @@ const DoctorDashboard = () => {
         </div>
       )}
 
-      {/* ✅ Pass stats to DocHeader to avoid undefined */}
       <DocHeader stats={stats} />
     </>
   );

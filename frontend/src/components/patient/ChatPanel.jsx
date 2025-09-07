@@ -1,4 +1,3 @@
-// src/components/patient/ChatPanel.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import socket, { ensureSocketConnected } from "../../lib/socket";
@@ -29,7 +28,7 @@ const ChatPanel = ({ partnerId, partnerName }) => {
     };
   }, []);
 
-  // 2) join personal room (compatible with server auto-join)
+  // 2) join personal room 
   useEffect(() => {
     if (!myId) return;
     socket.emit(EVENTS.JOIN, myId);

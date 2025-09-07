@@ -26,15 +26,6 @@ const appointmentSchema = new mongoose.Schema({
   startAt: { type: Date, required: true },
   notified5min: { type: Boolean, default: false }
 
-//   image: {
-//   type: String,
-//   default: "https://via.placeholder.com/100", // or your default doctor image
-// },
-//   experience: {
-//   type: Number,
-//   default: 5
-// },
-
 }, { timestamps: true });
 
 module.exports = mongoose.model("Appointment", appointmentSchema);

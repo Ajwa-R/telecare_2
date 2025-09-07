@@ -12,18 +12,9 @@ const Star = ({ on }) => (
 export default function TestimonialsSection() {
   const navigate = useNavigate();
 
-  // ✅ current user (for admin check)
+  // current user (for admin check)
   const user = useSelector((s) => s.auth.user);
   const isAdmin = user?.role === "admin";
-
-  // token normalize
-  // const reduxToken = useSelector((s) => s?.auth?.token);
-  // const rawToken =
-  //   reduxToken ||
-  //   localStorage.getItem("token") ||
-  //   localStorage.getItem("authToken") ||
-  //   "";
-  // const token = rawToken.startsWith("Bearer ") ? rawToken.slice(7) : rawToken;
 
   const [items, setItems] = useState([]);
   const [stats, setStats] = useState({ avg: 0, count: 0 });
@@ -73,7 +64,7 @@ export default function TestimonialsSection() {
     (async () => {
       setSaving(true);
       try {
-        await api.post(`/reviews`, draft); // ⬅️ cookies auto-attached
+        await api.post(`/reviews`, draft); //  cookies auto-attached
 
         alert(
           "Thanks! Your review has been submitted. It will appear after admin approval."
@@ -99,7 +90,6 @@ export default function TestimonialsSection() {
         if (!String(e?.message || "").includes("401")) {
           localStorage.removeItem(DRAFT_KEY);
         }
-        // query param hata do taa ke loop na bane
         url.searchParams.delete("postReview");
         window.history.replaceState({}, "", url.toString());
       }
@@ -107,7 +97,7 @@ export default function TestimonialsSection() {
   }, [user?._id]); //user set hone per
   //..
   const submit = async () => {
-    // 🔒 front-end guard too (backend already blocks admins)
+    //  front-end guard too (backend already blocks admins)
     if (isAdmin) {
       alert("Admins cannot post reviews");
       return;

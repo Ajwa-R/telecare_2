@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   HeartPulse,
 } from "lucide-react";
-import logo from "../../assets/logo.png"; // path apne project ke hisaab se check
+import logo from "../../assets/logo.png";
 
 function Footer() {
   const year = new Date().getFullYear();

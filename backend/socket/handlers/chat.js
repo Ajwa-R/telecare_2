@@ -9,7 +9,6 @@ const EVENTS = {
 };
 
 module.exports = (io, socket) => {
-  // Optional explicit room join (e.g., user profile room)
   socket.on(EVENTS.JOIN, (id) => {
     const rid = String(id || '').trim();
     if (rid) socket.join(`user:${rid}`);

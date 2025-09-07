@@ -1,6 +1,3 @@
-// controllers/authController.js
-// Login/Register/Google auth with HttpOnly cookie (no token in JSON body)
-
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
@@ -9,7 +6,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // --- helpers ---
 function signJwt(user) {
-  // keep payload small; use `sub` as primary identifier
+  // keep payload small; use 
   return jwt.sign(
     { sub: user._id?.toString?.() || user, role: user.role || 'patient' },
     process.env.JWT_SECRET,
@@ -53,7 +50,6 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // FE no longer uploads image; keep empty string as placeholder
     const newUser = await User.create({
       name,
       email,
@@ -63,10 +59,10 @@ exports.registerUser = async (req, res) => {
       specialization,
       role,
       experience,
-      image: '', // no file/multer
+      // image: '', // no file/multer
     });
 
-    // DO NOT send token in body
+    //  NOT send token in body
     return res.status(200).json({ user: userDto(newUser) });
   } catch (err) {
     console.error('registerUser error:', err);
@@ -74,12 +70,12 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-// -------------------- LOGIN (sets HttpOnly cookie) --------------------
+// -- LOGIN (sets HttpOnly cookie) 
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Hardcoded admin path (kept as you had)
+    // Hardcoded admin path 
     if (email === 'admin@gmail.com' && password === 'admin@123') {
       const adminUser = {
         _id: 'admin-hardcoded-id',
@@ -87,7 +83,7 @@ exports.loginUser = async (req, res) => {
         email,
         role: 'admin',
       };
-      const token = signJwt(adminUser._id); // role not needed for payload here
+      const token = signJwt(adminUser._id); 
       setAuthCookie(res, token);
       return res.status(200).json(userDto(adminUser));
     }
@@ -99,7 +95,7 @@ exports.loginUser = async (req, res) => {
     const isMatch = await user.matchPassword(password);
     if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
-    // Doctor must be approved/verified before login (you used isVerified)
+    // Doctor must be approved/verified before login 
     if (user.role === 'doctor' && !user.isVerified) {
       return res.status(403).json({ message: 'Your account is pending admin approval.' });
     }
@@ -107,7 +103,7 @@ exports.loginUser = async (req, res) => {
     const token = signJwt(user);
     setAuthCookie(res, token);
 
-    // Return only user (no token field)
+    // Return only user
     return res.status(200).json(userDto(user));
   } catch (err) {
     console.error('loginUser error:', err);
@@ -115,7 +111,7 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-// -------------------- GOOGLE LOGIN (sets HttpOnly cookie) --------------------
+// -------------------- GOOGLE LOGIN 
 exports.googleAuth = async (req, res) => {
   try {
     const { credential } = req.body;
@@ -136,9 +132,9 @@ exports.googleAuth = async (req, res) => {
       user = await User.create({
         name,
         email,
-        password: 'default', // safe if your schema hashes on save; otherwise consider a random string
+        password: 'default',
         role: 'patient',
-        image: '', // optional: payload.picture
+        // image: '', // optional: payload.picture
       });
     }
 
@@ -180,151 +176,3 @@ exports.logout = async (_req, res) => {
 
 
 
-// // controllers/authController.js
-// // Yahan hum login/register ka logic likh rahe hain
-
-// const User = require('../models/User'); 
-// const generateToken = require('../utils/generateToken');
-// const { OAuth2Client } = require('google-auth-library');
-// const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-
-// //register controller
-// exports.registerUser = async (req, res) => {
-//   try {
-//     const { name, email, password, gender, age, specialization, role, experience } = req.body;
-
-//     const userExists = await User.findOne({ email });
-//     if (userExists) {
-//    return res.status(400).json({ message: 'User already exists' });
-//  }
-
-//    //image form local multer
-//   //  const imageUrl = req.file ? `/uploads/${req.file.filename}` : "";
-// const imageUrl = req.file?.filename
-//     ? `/uploads/${req.file.filename}`
-//      : (req.file?.path?.includes('/uploads/')
-//         ? req.file.path.replace(/^.*(\/uploads\/)/, '/uploads/')
-//         : "");
-
-//     const newUser = await User.create({
-//       name,
-//       email,
-//       password,
-//       gender,
-//       age,
-//       specialization,
-//       role,
-//       experience,
-//       image: imageUrl,
-//     });
-
-//     console.log('✅ User created:', newUser); 
-
-//     res.status(200).json({
-//       token: generateToken(newUser._id),
-//       user: {
-//         _id: newUser._id,
-//         name: newUser.name,
-//         email: newUser.email,
-//         role: newUser.role,
-//         gender: newUser.gender,
-//         age: newUser.age,
-//         specialization: newUser.specialization,
-//         experience: newUser.experience,
-//         image: newUser.image,
-        
-//       }
-//     });
-
-//   } catch (err) {
-//     console.error('error in register user', err);
-//     return res.status(500).json({ message: err.message || 'Registeration failed' });
-//   }
-// };
-
-
-//  // Login Controller
-// exports.loginUser = async (req, res) => {
-//   const { email, password } = req.body;
-
-//     // admin login
-//   if (email === "admin@gmail.com" && password === "admin@123") {
-//     return res.status(200).json({
-//       _id: "admin-hardcoded-id",
-//       name: "Admin",
-//       email,
-//       role: "admin",
-//       token: generateToken("admin-hardcoded-id"),
-//     });
-//   }
-// // normal wala login
-//   const user = await User.findOne({ email }).select('+password');;
-//    if (!user) {
-//    return res.status(401).json({ message: 'Invalid credentials' });
-//   }
-
-//   const isMatch = await user.matchPassword(password);
-//    if (!isMatch) {
-//    return res.status(401).json({ message: 'Invalid credentials' });
-//  }
-  
-//   // doctors ko approve kerne login ke liye
-//   if (user.role === 'doctor' && !user.isVerified) {
-//   return res.status(403).json({ message: 'Your account is pending admin approval.' });
-// }
-
-//   res.status(200).json({
-//     _id: user._id,
-//     name: user.name,
-//     email: user.email,
-//     role: user.role,
-//     isVerified: user.isVerified,
-//     token: generateToken(user._id),
-//   });
-  
-// };
-
-
-// //google
-// exports.googleAuth = async (req, res) => {
-//   try {
-//     const { credential } = req.body;
-
-//     const ticket = await client.verifyIdToken({
-//       idToken: credential,
-//       audience: process.env.GOOGLE_CLIENT_ID,
-//     });
-
-//     const payload = ticket.getPayload();
-//     const { email, name } = payload;
-
-//     let user = await User.findOne({ email });
-//     if (!user) {
-//       user = await User.create({
-//         name,
-//         email,
-//         password: 'default', 
-//         role: 'patient'
-//       });
-//     }
-
-//     const token = generateToken(user._id);
-//    res.json({
-//   token,
-//   user: {
-//     _id: user._id,
-//     name: user.name,
-//     email: user.email,
-//     role: user.role,
-//     gender: user.gender,
-//     age: user.age,
-//     specialization: user.specialization
-//   }
-// });
-
-//   } catch (err) {
-//     console.error('Google auth error:', err.message);
-//     res.status(500).json({ message: 'Google login failed' });
-//   }
-// };

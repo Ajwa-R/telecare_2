@@ -152,11 +152,6 @@ export default function CallRoom() {
     return stream;
   }
 
-  // async function attachLocalTracks() {
-  //   const pc = await ensurePC();
-  //   const stream = await getLocalStream();
-  //   stream.getTracks().forEach((t) => pc.addTrack(t, stream));
-  // }
   async function attachLocalTracks() {
     const pc = await ensurePC();
     const stream = await getLocalStream();

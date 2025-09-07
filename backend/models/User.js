@@ -33,7 +33,7 @@
   },
 
   specialization: {
-    type: String, // only if role is doctor
+    type: String,
   },
 
   experience: Number,            

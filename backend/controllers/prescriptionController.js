@@ -9,7 +9,7 @@ exports.create = async (req, res) => {
     const appt = await Appointment.findById(appointmentId).populate('patientId doctorId');
     if (!appt) return res.status(404).json({ message: 'Appointment not found' });
 
-    // ✅ doctor owns the appointment? (object/string safe)
+    // doctor owns the appointment(object/string safe)
     const doctorId =
       appt.doctorId?._id?.toString?.() ?? appt.doctorId?.toString?.();
 
@@ -20,9 +20,6 @@ exports.create = async (req, res) => {
     if (doctorId !== req.user._id.toString()) {
       return res.status(403).json({
         message: 'Not your appointment',
-        // DEBUG only (remove in prod):
-        // expected: doctorId,
-        // got: req.user._id.toString(),
       });
     }
 
