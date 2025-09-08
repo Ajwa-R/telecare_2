@@ -13,7 +13,10 @@ import MobileAppSection from "./components/landingPage/services/service3/MobileA
 import SecureMessagingSection from "./components/landingPage/services/service3/secure/SecureMessagingSection";
 import ChatSupportSection from "./components/landingPage/services/service3/chatSupport/ChatSupportSection";
 
-import { useSelector } from "react-redux"; //use selctor
+import { useSelector, useDispatch } from "react-redux"; //  dispatch add
+import { useEffect } from "react";                      //  useEffect add
+import { fetchMe } from "@/slices/authSlice";           //  thunk import
+
 import PatientDashboard from './pages/patient/PatientDashboard';
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import PrivateRoute from "./components/common/PrivateRoute";
@@ -21,7 +24,12 @@ import DoctorList from "./pages/DoctorList";
 import AdminDashboard from './pages/admin/AdminDashboard';
 import CallPage from "./pages/CallPage";
 function App() {
-  const user = useSelector((state) => state.auth.user);
+
+   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchMe());   
+  }, [dispatch]);
+  // const user = useSelector((state) => state.auth.user);
   return (
     <Routes>
       <Route element={<Layout />}>

@@ -42,7 +42,7 @@ const PatientDashboard = () => {
   const [latestAppointment, setLatestAppointment] = useState(null);
   const shownDate = latestAppointment?.startAt || latestAppointment?.date;
 
-  // 🔹 NEW: list of ALL upcoming (today + future)
+  // new list of ALL upcoming (today + future)
   const [upcomingList, setUpcomingList] = useState([]);
   const loadUpcomingList = async () => {
     if (!user?._id) return;
@@ -80,7 +80,7 @@ const PatientDashboard = () => {
     };
   }, []);
 
-  // 🔹 Mount: load list of upcoming
+  // Mount: load list of upcoming
   useEffect(() => {
     loadUpcomingList();
   }, [user?._id]);

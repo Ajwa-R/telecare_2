@@ -164,6 +164,26 @@ exports.logout = async (_req, res) => {
   }
 };
 
+// -------------------- GET /auth/me (current user) --------------------
+exports.getMe = async (req, res) => {
+  // protect middleware ne req.user attach kiya hot h
+  // aur protect me isApproved select kar re. Consistency ke liye dono expose .
+  const u = req.user || {};
+  return res.json({
+    _id: u._id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    gender: u.gender,
+    age: u.age,
+    specialization: u.specialization,
+    experience: u.experience,
+    image: u.image || "",
+    // normalize flags so FE kabhi confuse na ho
+    isVerified: u.isVerified ?? u.isApproved ?? false,
+    isApproved: u.isApproved ?? u.isVerified ?? false,
+  });
+};
 
 
 

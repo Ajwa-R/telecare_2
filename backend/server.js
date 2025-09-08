@@ -23,7 +23,7 @@ if (process.env.NODE_ENV === 'production') {
 //cors cookies
 const allow = new Set(
   [
-    process.env.FRONTEND_URL,        // e.g. http://localhost:5173
+    process.env.FRONTEND_URL,
     "http://localhost:5173",
     "http://127.0.0.1:5173",
   ].filter(Boolean)
@@ -34,7 +34,6 @@ const corsOptions = {
   origin: (origin, cb) => cb(null, !origin || allow.has(origin)),
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],//del kerna ha
 };
 
 app.use(cors(corsOptions)); // preflight handled by middleware

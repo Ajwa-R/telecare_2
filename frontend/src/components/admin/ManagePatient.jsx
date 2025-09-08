@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../services/api";
 
-const API_BASE = "http://localhost:5000/api";
 
 export default function ManagePatient() {
   const [items, setItems] = useState([]);

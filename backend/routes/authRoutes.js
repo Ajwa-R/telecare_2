@@ -1,12 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middlewares/authMiddleware');
 
-const {
-  registerUser,
-  loginUser,
-  googleAuth,
-  logout,
-} = require('../controllers/authController');
+
+const { registerUser, loginUser, googleAuth, logout, getMe, } = require('../controllers/authController');
 
 // Google OAuth
 router.post('/google', googleAuth);
@@ -19,5 +16,8 @@ router.post('/login', loginUser);
 
 // Logout
 router.post('/logout', logout);
+
+// Current user (cookie-based)
+router.get('/me', protect, getMe);
 
 module.exports = router;
