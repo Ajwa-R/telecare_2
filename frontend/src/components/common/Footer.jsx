@@ -16,16 +16,17 @@ import logo from "../../assets/logo.png";
 
 function Footer() {
   const year = new Date().getFullYear();
+
   return (
     <footer className="mt-16 bg-white border-t">
       {/* Top */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
         {/* Brand */}
         <div>
-          <div className="flex items-center gap-3 mb-4">
-            <img src={logo} alt="TeleCare" className="h-9 w-auto" />
+          <Link to="/" className="flex items-center gap-3 mb-4">
+            <img src={logo} alt="TeleCare logo" className="h-9 w-auto" />
             <span className="text-xl font-semibold">TeleCare</span>
-          </div>
+          </Link>
           <p className="text-sm text-gray-600 leading-relaxed">
             Smart healthcare: book appointments, chat securely, and join video
             consults — all in one place.
@@ -38,39 +39,29 @@ function Footer() {
           </div>
         </div>
 
-        {/* Company */}
+        {/* Company (internal routes -> Link) */}
         <div>
           <div className="text-base font-semibold mb-3">Company</div>
           <ul className="space-y-2 text-sm text-gray-700">
             <li>
-              <Link to="/" className="hover:text-emerald-700">
-                Home
-              </Link>
+              <Link to="/" className="hover:text-emerald-700">Home</Link>
             </li>
             <li>
-              <Link to="/about" className="hover:text-emerald-700">
-                About
-              </Link>
+              <Link to="/about" className="hover:text-emerald-700">About</Link>
             </li>
             <li>
-              <Link to="/services" className="hover:text-emerald-700">
-                Services
-              </Link>
+              <Link to="/services" className="hover:text-emerald-700">Services</Link>
             </li>
             <li>
-              <Link to="/login" className="hover:text-emerald-700">
-                Login
-              </Link>
+              <Link to="/login" className="hover:text-emerald-700">Login</Link>
             </li>
             <li>
-              <Link to="/register" className="hover:text-emerald-700">
-                Register
-              </Link>
+              <Link to="/register" className="hover:text-emerald-700">Register</Link>
             </li>
           </ul>
         </div>
 
-        {/* Patient */}
+        {/* Patient (internal routes -> Link, including query params) */}
         <div>
           <div className="text-base font-semibold mb-3">For Patients</div>
           <ul className="space-y-2 text-sm text-gray-700">
@@ -106,7 +97,7 @@ function Footer() {
           </ul>
         </div>
 
-        {/* Contact */}
+        {/* Contact (external protocols -> <a>) */}
         <div>
           <div className="text-base font-semibold mb-3">Contact</div>
           <ul className="space-y-2 text-sm text-gray-700">
@@ -121,7 +112,10 @@ function Footer() {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="size-4" />
-              <a href="tel:+920000000000" className="hover:text-emerald-700">
+              <a
+                href="tel:+920000000000"
+                className="hover:text-emerald-700"
+              >
                 +92 00 000 0000
               </a>
             </li>
@@ -130,17 +124,43 @@ function Footer() {
               <span>Lahore, Pakistan</span>
             </li>
           </ul>
+
+          {/* Socials (external -> <a> with target+rel) */}
           <div className="mt-4 flex items-center gap-4">
-            <a href="#" aria-label="Facebook" className="hover:opacity-80">
+            <a
+              href="https://facebook.com"
+              aria-label="Facebook"
+              className="hover:opacity-80"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Facebook className="size-5" />
             </a>
-            <a href="#" aria-label="Twitter" className="hover:opacity-80">
+            <a
+              href="https://twitter.com"
+              aria-label="Twitter"
+              className="hover:opacity-80"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Twitter className="size-5" />
             </a>
-            <a href="#" aria-label="Instagram" className="hover:opacity-80">
+            <a
+              href="https://instagram.com"
+              aria-label="Instagram"
+              className="hover:opacity-80"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Instagram className="size-5" />
             </a>
-            <a href="#" aria-label="Github" className="hover:opacity-80">
+            <a
+              href="https://github.com"
+              aria-label="Github"
+              className="hover:opacity-80"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Github className="size-5" />
             </a>
           </div>

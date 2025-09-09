@@ -14,7 +14,6 @@ exports.getUpcoming = async (req, res) => {
   try {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
     const appt = await Appointment.findOne({
       patientId: userId,
       date: { $gte: startOfToday },

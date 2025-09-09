@@ -1,9 +1,15 @@
-const router = require('express').Router();
-const { protect, requireRole } = require('../middlewares/authMiddleware');
-const ctrl = require('../controllers/prescriptionController');
+const express = require("express");
+const router = express.Router();
+const { protect, requireRole } = require("../middlewares/authMiddleware");
 
-router.post('/', protect, requireRole('doctor'), ctrl.create);
-router.get('/by-appointment/:id', protect, ctrl.getByAppointment);
-router.get('/patient/:patientId', protect, ctrl.getByPatient);
+const {create, getByAppointment, getByPatient,} = require("../controllers/prescriptionController");
+
+
+router.post("/", protect, requireRole("doctor"), create);
+
+router.get("/by-appointment/:id", protect, getByAppointment);
+
+
+router.get("/patient/:patientId", protect, getByPatient);
 
 module.exports = router;
