@@ -57,6 +57,7 @@ const authSlice = createSlice({
       .addCase(fetchMe.fulfilled, ok)
       .addCase(fetchMe.rejected,  (s,a)=>{ s.status="failed"; s.user=null; s.error=a.error.message; })
       
+      //login
     b.addCase(login.pending, (s) => {
       s.status = "loading";
       s.error = null;
@@ -66,6 +67,7 @@ const authSlice = createSlice({
         s.status = "failed";
         s.error = a.error.message;
       })
+      //google
       .addCase(googleLogin.fulfilled, ok)
       .addCase(logout.fulfilled, (s) => {
         s.user = null;
