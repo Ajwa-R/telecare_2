@@ -23,6 +23,8 @@ const AdminDashboard = () => {
   const [pendingDoctors, setPendingDoctors] = useState([]);
   const [approvedDoctors, setApprovedDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [busyId, setBusyId] = useState(null);
+  const inFlight = React.useRef(new Set());
 
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") || "doctors"; // admin example
@@ -53,30 +55,47 @@ const AdminDashboard = () => {
 
   // doctor actions (unchanged)
   const handleApprove = async (id) => {
+    if (busyId === id || inFlight.current.has(id)) return; // block double-clicks/duplicates
+    setBusyId(id);
+    inFlight.current.add(id);
+
     try {
       const data = await api.put(`/users/doctors/${id}/approve`);
       // Optimistic UI
       setPendingDoctors((prev) => prev.filter((d) => d._id !== id));
-      setApprovedDoctors((prev) => [data.doctor, ...prev]);
+      if (data?.doctor) setApprovedDoctors((prev) => [data.doctor, ...prev]);
 
-      alert("Doctor approved ✅");
+      // OPTIONAL: if you use react-hot-toast, dedupe by id:
+      // import toast from 'react-hot-toast';
+      // const tid = `approve-${id}`;
+      // if (!toast.isActive?.(tid)) toast.success('Doctor approved', { id: tid });
+      // else: alert("Doctor approved ✅");
     } catch (err) {
       console.error(err);
-      alert(err.message || "Failed to approve doctor");
+      // toast.error(err.message) OR alert(err.message || 'Failed to approve doctor');
+    } finally {
+      inFlight.current.delete(id);
+      setBusyId(null);
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this doctor?")) return;
-    try {
-      const data = await api.delete(`/users/doctors/${id}`);
+    if (busyId === id || inFlight.current.has(id)) return;
+    setBusyId(id);
+    inFlight.current.add(id);
 
+    try {
+      await api.delete(`/users/doctors/${id}`);
       setPendingDoctors((prev) => prev.filter((d) => d._id !== id));
       setApprovedDoctors((prev) => prev.filter((d) => d._id !== id));
-      alert("Doctor deleted 🗑️");
+      // toast.success('Doctor deleted') or alert('Doctor deleted 🗑️');
     } catch (err) {
       console.error(err);
-      alert(err.message || "Failed to delete doctor");
+      // toast.error(err.message) or alert(err.message || 'Failed to delete doctor');
+    } finally {
+      inFlight.current.delete(id);
+      setBusyId(null);
     }
   };
 
@@ -312,9 +331,12 @@ const AdminDashboard = () => {
                               {doctorView === "pending" && (
                                 <button
                                   onClick={() => handleApprove(doc._id)}
-                                  className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700"
+                                  disabled={busyId === doc._id}
+                                  className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg disabled:opacity-60"
                                 >
-                                  Approve
+                                  {busyId === doc._id
+                                    ? "Approving..."
+                                    : "Approve"}
                                 </button>
                               )}
                               <button
@@ -370,4 +392,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

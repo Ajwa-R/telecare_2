@@ -24,38 +24,39 @@ exports.getApprovedDoctors = async (_req, res) => {
 
 exports.approveDoctor = async (req, res) => {
   try {
-    const doc = await User.findByIdAndUpdate(
-      req.params.id,
-      { $set: { isVerified: true } },
-      { new: true }
-    ).select('name email specialization image experience isVerified');
+    const doc = await User.findOneAndUpdate(
+  { _id: req.params.id, role: 'doctor' },   // ensure only doctors
+  { $set: { isVerified: true } },
+  { new: true }
+).select('name email specialization image experience isVerified');
 
-    if (!doc) return res.status(404).json({ message: 'Doctor not found' });
+if (!doc) return res.status(404).json({ message: 'Doctor not found' });
 
-    try {
-      await sendMail({
-        to: doc.email,
-        subject: 'Your TeleCare doctor account has been approved',
-        html: `
-          <p>Dear Dr. ${doc.name || ''},</p>
-          <p>Your TeleCare doctor account has been <b>approved</b>. You can now sign in and access your dashboard.</p>
-          <p>Regards,<br/>TeleCare Team</p>
-        `,
-      });
-    } catch (e) {
-      console.error('Email send failed:', e);
-    }
+// respond FIRST (fast)
+res.json({
+  message: 'Approved',
+  doctor: {
+    _id: doc._id,
+    name: doc.name,
+    email: doc.email,
+    specialization: doc.specialization,
+    isVerified: doc.isVerified,
+  },
+});
 
-    res.json({
-      message: 'Approved',
-      doctor: {
-        _id: doc._id,
-        name: doc.name,
-        email: doc.email,
-        specialization: doc.specialization,
-        isVerified: doc.isVerified,
-      },
-    });
+// send email in background (no await)
+Promise.resolve().then(() =>
+  sendMail({
+    to: doc.email,
+    subject: 'Your TeleCare doctor account has been approved',
+    html: `
+      <p>Dear Dr. ${doc.name || ''},</p>
+      <p>Your TeleCare doctor account has been <b>approved</b>. You can now sign in and access your dashboard.</p>
+      <p>Regards,<br/>TeleCare Team</p>
+    `,
+  })
+).catch(err => console.error('Email send failed:', err));
+
   } catch (e) {
     res.status(500).json({ message: 'Failed to approve doctor' });
   }

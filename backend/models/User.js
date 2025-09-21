@@ -36,10 +36,13 @@
     type: String,
   },
 
-  experience: Number,            
+  experience: Number,
   image: { type: String, default: "" },
   isVerified: { type: Boolean, default: false },//pahle doctor ko apprve kare ga admin
  },{timestamps:true});
+
+ // after schema definition
+userSchema.index({ role: 1, isVerified: 1, createdAt: -1 });
 
  // password ko hash kerna ka middleware
   userSchema.pre('save', async function (next){
