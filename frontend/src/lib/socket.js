@@ -8,6 +8,7 @@ const socket = io(API_BASE, {
   path: "/socket.io",
   autoConnect: false,
   transports: ["websocket"], // ok to keep websocket-first
+  withCredentials: true,
 });
 
 export function ensureSocketConnected() {

@@ -26,11 +26,12 @@ function parseUserIdFromAuth(auth) {
   } catch { return null; }
 }
 
-function initSocket(httpServer, { origin, credentials = true } = {}) {
+function initSocket(httpServer, { allowList = [], credentials = true } = {}) {
   const io = new Server(httpServer, {
     path: '/socket.io',
-    cors: { origin: origin || '*', credentials },
+    cors: { origin: allowList, credentials },
   });
+
 
   // -------- base namespace: chat + notifications --------
   io.use((socket, next) => {

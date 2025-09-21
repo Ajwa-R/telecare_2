@@ -14,30 +14,36 @@ connectDB();
 
 const app = express();
 const server = http.createServer(app); //  server create kera
+//  a proxy (Railway/Vercel), this is important for Secure cookies:
+app.set('trust proxy', 1);
 
 // In production behind a proxy (NGINX/Render/Vercel Edge), secure cookies work
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
 }
 
+
 //cors cookies
-const allow = new Set(
-  [
-    process.env.FRONTEND_URL,
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-  ].filter(Boolean)
-);
+// --- CORS allow list built from env + localhost ---
+const allow = (process.env.CLIENT_ORIGINS || process.env.FRONTEND_URL || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
 
+// always allow local dev too
+['http://localhost:5173', 'http://127.0.0.1:5173'].forEach(o => {
+  if (!allow.includes(o)) allow.push(o);
+});
 
-const corsOptions = {
-  origin: (origin, cb) => cb(null, !origin || allow.has(origin)),
+app.use(cors({
+  origin(origin, cb) {
+    if (!origin) return cb(null, true); // health checks / curl
+    return allow.includes(origin) ? cb(null, true) : cb(new Error('CORS'));
+  },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-};
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+}));
 
-app.use(cors(corsOptions)); // preflight handled by middleware
-//...
 
 //parsers
 app.use(express.json());
@@ -59,9 +65,7 @@ app.use('/api/chats', require('./routes/chatRoutes'));
 app.use('/api/prescriptions', require('./routes/prescriptionRoutes'));
 
 //Sockets & Jobs
-const io = initSocket(server, {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
-});
+const io = initSocket(server, { allowList: allow });
 
 // ---- Jobs (start AFTER io exists) ----
 const { startAppointmentNotifier } = require('./jobs/appointmentNotifier');
