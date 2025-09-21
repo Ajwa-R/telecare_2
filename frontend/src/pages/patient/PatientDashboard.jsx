@@ -322,10 +322,15 @@ const PatientDashboard = () => {
                     <ul className="space-y-2">
                       {upcomingList.slice(1, 5).map((a) => (
                         <li key={a._id} className="text-sm text-gray-700">
-                          {new Date(a.startAt).toLocaleString([], {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })}
+                          {new Date(a.startAt || a.date).toLocaleString(
+                            undefined,
+                            {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                              hour12: true,
+                            }
+                          )}
+
                           {" — "}
                           <span className="font-medium">{a.doctorName}</span>
                           {" • "}

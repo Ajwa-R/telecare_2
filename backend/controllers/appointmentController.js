@@ -1,6 +1,6 @@
 // controllers/appointmentController.js
-const Appointment = require('../models/Appointment');
-const User = require('../models/User');
+const Appointment = require("../models/Appointment");
+const User = require("../models/User");
 
 // helper
 function normalizeAppt(a) {
@@ -13,27 +13,32 @@ exports.getUpcoming = async (req, res) => {
   const { userId } = req.params;
   try {
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
     const appt = await Appointment.findOne({
       patientId: userId,
       date: { $gte: startOfToday },
     })
       .sort({ date: 1 })
-      .populate('doctorId', 'name');
+      .populate("doctorId", "name");
 
-    if (!appt) return res.status(404).json({ message: 'No upcoming appointment' });
+    if (!appt)
+      return res.status(404).json({ message: "No upcoming appointment" });
 
     res.json({
       _id: appt._id,
       doctorId: appt.doctorId?._id || appt.doctorId,
-      doctorName: appt.doctorId?.name ?? 'Unknown',
+      doctorName: appt.doctorId?.name ?? "Unknown",
       date: appt.date,
       condition: appt.condition,
       startAt: appt.date,
     });
   } catch (err) {
-    console.error('getUpcoming error:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("getUpcoming error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -42,19 +47,23 @@ exports.getUpcomingAll = async (req, res) => {
   try {
     const { userId } = req.params;
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
 
     const list = await Appointment.find({
       patientId: userId,
       date: { $gte: startOfToday },
     })
       .sort({ date: 1 })
-      .populate('doctorId', 'name');
+      .populate("doctorId", "name");
 
-    const out = list.map(a => ({
+    const out = list.map((a) => ({
       _id: a._id,
       doctorId: a.doctorId?._id || a.doctorId,
-      doctorName: a.doctorId?.name ?? 'Unknown',
+      doctorName: a.doctorId?.name ?? "Unknown",
       date: a.date,
       condition: a.condition,
       startAt: a.date,
@@ -62,8 +71,8 @@ exports.getUpcomingAll = async (req, res) => {
 
     res.json(out);
   } catch (e) {
-    console.error('getUpcomingAll error', e);
-    res.status(500).json({ message: 'Failed to fetch upcoming list' });
+    console.error("getUpcomingAll error", e);
+    res.status(500).json({ message: "Failed to fetch upcoming list" });
   }
 };
 
@@ -71,12 +80,15 @@ exports.getUpcomingAll = async (req, res) => {
 exports.getDoctorAppointments = async (req, res) => {
   try {
     const doctorId = req.params.id;
-    const docs = await Appointment.find({ doctorId }).populate('patientId', 'name');
+    const docs = await Appointment.find({ doctorId }).populate(
+      "patientId",
+      "name"
+    );
     const list = docs.map(normalizeAppt);
     res.json(list);
   } catch (err) {
-    console.error('getDoctorAppointments error:', err.message);
-    res.status(500).json({ message: 'Failed to fetch appointments' });
+    console.error("getDoctorAppointments error:", err.message);
+    res.status(500).json({ message: "Failed to fetch appointments" });
   }
 };
 
@@ -86,67 +98,67 @@ exports.getLatest = async (req, res) => {
   try {
     const appt = await Appointment.findOne({ patientId: userId })
       .sort({ date: -1 })
-      .populate('doctorId', 'name');
+      .populate("doctorId", "name");
 
-    if (!appt) return res.status(404).json({ message: 'No appointment found' });
+    if (!appt) return res.status(404).json({ message: "No appointment found" });
 
     const normalized = normalizeAppt(appt);
     res.json({
       _id: normalized._id,
       doctorId: normalized.doctorId?._id || normalized.doctorId,
-      doctorName: normalized.doctorId?.name ?? 'Unknown',
+      doctorName: normalized.doctorId?.name ?? "Unknown",
       date: normalized.date,
       condition: normalized.condition,
       startAt: normalized.startAt,
     });
   } catch (err) {
-    console.error('getLatest error:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("getLatest error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
 // POST /api/appointments
-// POST /api/appointments
 exports.bookAppointment = async (req, res) => {
-  const { patientId, doctorId, condition, startUtc, date, time } = req.body;
+  const { patientId, doctorId, condition, date, time, startUtc } = req.body;
 
-  if (!patientId || !doctorId || !condition || (!startUtc && !date)) {
-    return res.status(400).json({ error: 'All fields are required' });
+  if (!patientId || !doctorId || !condition || (!date && !startUtc)) {
+    return res.status(400).json({ error: "All fields are required" });
   }
 
   try {
     let when;
 
-    if (startUtc) {
-      // startUtc is ISO like "2025-09-21T06:50:00.000Z"
-      when = new Date(startUtc);
-    } else {
-      // Fallback: "YYYY-MM-DDTHH:mm" from datetime-local (treat as LOCAL)
+    if (date) {
+      // date is from <input type="datetime-local"> like "2025-09-21T11:50"
       const v = String(date);
       const [ds, ts = "00:00"] = v.split("T");
       const [y, m, d] = ds.split("-").map(Number);
       const [hh, mm] = ts.split(":").map(Number);
-      when = new Date(y, m - 1, d, hh, mm); // local
+      // Build **LOCAL** date; Mongo will store UTC internally
+      when = new Date(y, m - 1, d, hh, mm);
+    } else if (startUtc) {
+      // fallback: accept ISO "2025-09-21T06:50:00.000Z"
+      when = new Date(startUtc);
     }
 
-    if (Number.isNaN(when.getTime())) {
-      return res.status(400).json({ error: 'Invalid date' });
+    if (!when || Number.isNaN(when.getTime())) {
+      return res.status(400).json({ error: "Invalid date/time" });
     }
 
     const appointment = await Appointment.create({
       patientId,
       doctorId,
       condition,
-      date: when,                         // for backward compat
+      date: when, // legacy field
       time: time || when.toISOString().slice(11, 16), // "HH:MM" (optional)
-      startAt: when,                      // canonical
+      startAt: when, // canonical
       notified5min: false,
     });
 
     res.status(201).json(appointment);
   } catch (err) {
-    console.error('bookAppointment error:', err);
-    res.status(500).json({ error: 'Could not book appointment' });
+    console.error("bookAppointment error:", err);
+    res.status(500).json({ error: "Could not book appointment" });
   }
 };
 
@@ -155,8 +167,10 @@ exports.getPatientDoctors = async (req, res) => {
   try {
     const { patientId } = req.params;
 
-    const appts = await Appointment.find({ patientId })
-      .populate('doctorId', 'name specialization image city experience');
+    const appts = await Appointment.find({ patientId }).populate(
+      "doctorId",
+      "name specialization image city experience"
+    );
 
     const map = new Map();
     for (const a of appts) {
@@ -169,15 +183,18 @@ exports.getPatientDoctors = async (req, res) => {
         map.set(k, {
           _id: d._id,
           name: d.name,
-          specialization: d.specialization || 'General',
-          image: d.image || '',
-          city: d.city || '',
+          specialization: d.specialization || "General",
+          image: d.image || "",
+          city: d.city || "",
           experience: d.experience || 0,
           lastAppointmentAt: last,
         });
       } else if (last) {
         const cur = map.get(k);
-        if (!cur.lastAppointmentAt || new Date(last) > new Date(cur.lastAppointmentAt)) {
+        if (
+          !cur.lastAppointmentAt ||
+          new Date(last) > new Date(cur.lastAppointmentAt)
+        ) {
           cur.lastAppointmentAt = last;
         }
       }
@@ -185,7 +202,7 @@ exports.getPatientDoctors = async (req, res) => {
 
     return res.json(Array.from(map.values()));
   } catch (e) {
-    console.error('getPatientDoctors error:', e);
-    return res.status(500).json({ message: 'Failed to load doctors' });
+    console.error("getPatientDoctors error:", e);
+    return res.status(500).json({ message: "Failed to load doctors" });
   }
 };
