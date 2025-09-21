@@ -25,7 +25,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import logo from '../../assets/logo.png';
+import logo from "../../assets/logo.png";
 
 const PatientDashboard = () => {
   const doLogout = useAppLogout();
@@ -41,6 +41,32 @@ const PatientDashboard = () => {
 
   const [latestAppointment, setLatestAppointment] = useState(null);
   const shownDate = latestAppointment?.startAt || latestAppointment?.date;
+
+  // ---- derive local display fields from UTC date ----
+  const _start = latestAppointment
+    ? new Date(latestAppointment.startAt || latestAppointment.date)
+    : null;
+
+  const timeText = _start
+    ? _start.toLocaleTimeString(undefined, {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "N/A";
+
+  const dateText = _start
+    ? _start.toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "N/A";
+
+  const minutesUntil = _start
+    ? Math.max(0, Math.round((_start - new Date()) / 60000))
+    : 0;
 
   // new list of ALL upcoming (today + future)
   const [upcomingList, setUpcomingList] = useState([]);
@@ -268,30 +294,22 @@ const PatientDashboard = () => {
                     📅 Upcoming Appointment
                   </h2>
                   <p className="text-gray-700">
-                    You have an appointment at{" "}
-                    <strong>
-                      {latestAppointment?.startAt
-                        ? new Date(
-                            latestAppointment.startAt
-                          ).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "N/A"}
-                    </strong>{" "}
-                    on{" "}
-                    <strong>
-                      {shownDate
-                        ? new Date(shownDate).toLocaleDateString([], {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "N/A"}
-                    </strong>{" "}
-                    for: <strong>{latestAppointment.condition}</strong>
+                    You have an appointment at <strong>{timeText}</strong> on{" "}
+                    <strong>{dateText}</strong> for:{" "}
+                    <strong>{latestAppointment?.condition}</strong>
                   </p>
+
+                  <div className="mt-3">
+                    <button
+                      className="px-3 py-1.5 rounded-md bg-gray-100 text-gray-600"
+                      disabled
+                    >
+                      {minutesUntil
+                        ? `Starts in ${minutesUntil} min`
+                        : "Starting now"}
+                    </button>
+                  </div>
+
                   <div className="mt-4">
                     <VideoCallButton appointment={latestAppointment} />
                   </div>

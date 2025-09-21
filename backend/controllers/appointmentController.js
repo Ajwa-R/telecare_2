@@ -106,27 +106,43 @@ exports.getLatest = async (req, res) => {
 };
 
 // POST /api/appointments
+// POST /api/appointments
 exports.bookAppointment = async (req, res) => {
-  const { patientId, doctorId, condition, date, time } = req.body;
+  const { patientId, doctorId, condition, startUtc, date, time } = req.body;
 
-  if (!patientId || !doctorId || !condition || !date || !time) {
+  if (!patientId || !doctorId || !condition || (!startUtc && !date)) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
   try {
-    const when = new Date(date);
+    let when;
+
+    if (startUtc) {
+      // startUtc is ISO like "2025-09-21T06:50:00.000Z"
+      when = new Date(startUtc);
+    } else {
+      // Fallback: "YYYY-MM-DDTHH:mm" from datetime-local (treat as LOCAL)
+      const v = String(date);
+      const [ds, ts = "00:00"] = v.split("T");
+      const [y, m, d] = ds.split("-").map(Number);
+      const [hh, mm] = ts.split(":").map(Number);
+      when = new Date(y, m - 1, d, hh, mm); // local
+    }
+
     if (Number.isNaN(when.getTime())) {
       return res.status(400).json({ error: 'Invalid date' });
     }
+
     const appointment = await Appointment.create({
       patientId,
       doctorId,
       condition,
-      date: when,
-      time,
-      startAt: when,        // notifier uses this
+      date: when,                         // for backward compat
+      time: time || when.toISOString().slice(11, 16), // "HH:MM" (optional)
+      startAt: when,                      // canonical
       notified5min: false,
     });
+
     res.status(201).json(appointment);
   } catch (err) {
     console.error('bookAppointment error:', err);
