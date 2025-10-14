@@ -47,22 +47,25 @@ const PatientDashboard = () => {
     ? new Date(latestAppointment.startAt || latestAppointment.date)
     : null;
 
-  const timeText = _start
-    ? _start.toLocaleTimeString(undefined, {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-    : "N/A";
+ const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. Asia/Karachi
 
-  const dateText = _start
-    ? _start.toLocaleDateString(undefined, {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "N/A";
+const fmtTime = new Intl.DateTimeFormat(undefined, {
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+  timeZone: tz,
+});
+const fmtDate = new Intl.DateTimeFormat(undefined, {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  timeZone: tz,
+});
+
+const timeText = _start ? fmtTime.format(_start) : "N/A";
+const dateText = _start ? fmtDate.format(_start) : "N/A";
+
 
   const minutesUntil = _start
     ? Math.max(0, Math.round((_start - new Date()) / 60000))

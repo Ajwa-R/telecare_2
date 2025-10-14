@@ -129,17 +129,22 @@ exports.bookAppointment = async (req, res) => {
     let when;
 
     if (date) {
-      // date is from <input type="datetime-local"> like "2025-09-21T11:50"
-      const v = String(date);
-      const [ds, ts = "00:00"] = v.split("T");
-      const [y, m, d] = ds.split("-").map(Number);
-      const [hh, mm] = ts.split(":").map(Number);
-      // Build **LOCAL** date; Mongo will store UTC internally
-      when = new Date(y, m - 1, d, hh, mm);
-    } else if (startUtc) {
-      // fallback: accept ISO "2025-09-21T06:50:00.000Z"
-      when = new Date(startUtc);
-    }
+  const v = String(date);
+  const [ds, ts = "00:00"] = v.split("T");
+  const [y, m, d] = ds.split("-").map(Number);
+  const [hh, mm] = ts.split(":").map(Number);
+
+  // Build LOCAL Date first
+  const local = new Date(y, m - 1, d, hh, mm);
+  // Convert to pure UTC ISO (no double offset)
+  const utcISO = new Date(local.getTime() - local.getTimezoneOffset() * 60000).toISOString();
+
+  when = new Date(utcISO);
+} else if (startUtc) {
+  // Accept backend ISO UTC directly
+  when = new Date(startUtc);
+}
+
 
     if (!when || Number.isNaN(when.getTime())) {
       return res.status(400).json({ error: "Invalid date/time" });

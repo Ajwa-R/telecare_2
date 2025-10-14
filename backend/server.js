@@ -54,6 +54,9 @@ app.use(cookieParser());
 //health single
 app.get('/', (_req, res) => res.send('TeleCare API Running'));
 
+// health route
+// app.get('/api/test', (_req, res) => res.json({ ok: true, ts: Date.now() }));
+
 //Routes...
 app.use('/api/auth', require('./routes/authRoutes'));
 // const appointmentRoutes = require('./routes/appointmentRoutes');
