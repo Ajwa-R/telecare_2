@@ -43,28 +43,30 @@ const PatientDashboard = () => {
   const shownDate = latestAppointment?.startAt || latestAppointment?.date;
 
   // ---- derive local display fields from UTC date ----
-  const _start = latestAppointment
-    ? new Date(latestAppointment.startAt || latestAppointment.date)
-    : null;
+const _start = latestAppointment
+  ? new Date(latestAppointment.startAt || latestAppointment.date)
+  : null;
 
- const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. Asia/Karachi
+const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-const fmtTime = new Intl.DateTimeFormat(undefined, {
-  hour: "numeric",
-  minute: "2-digit",
-  hour12: true,
-  timeZone: tz,
-});
-const fmtDate = new Intl.DateTimeFormat(undefined, {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  timeZone: tz,
-});
+const timeText = _start
+  ? new Intl.DateTimeFormat(undefined, {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: tz,
+    }).format(_start)
+  : "N/A";
 
-const timeText = _start ? fmtTime.format(_start) : "N/A";
-const dateText = _start ? fmtDate.format(_start) : "N/A";
+const dateText = _start
+  ? new Intl.DateTimeFormat(undefined, {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: tz,
+    }).format(_start)
+  : "N/A";
 
 
   const minutesUntil = _start

@@ -36,36 +36,29 @@ const AppointmentSection = ({ onBook }) => {
     })();
   }, []);
 
- const handleBook = () => {
+const handleBook = () => {
   if (!selectedDate || !selectedCondition || !selectedDoctor) {
     alert("Please fill all fields");
     return;
   }
 
-  // selectedDate e.g. "2025-09-21T11:50"
-  const [datePart, timePart] = String(selectedDate).split("T");
-  const [y, m, d] = datePart.split("-").map(Number);
-  const [hh, mm] = (timePart || "00:00").split(":").map(Number);
-
-  // Make a LOCAL Date from picker value
-  const local = new Date(y, m - 1, d, hh, mm);
-
-  // Convert to UTC ISO (Z) for backend
-  const startUtc = local.toISOString();
+  // selectedDate: "YYYY-MM-DDTHH:mm"
+  const local = new Date(String(selectedDate));
+  const startUtc = local.toISOString(); // ✅ always UTC
 
   const appointment = {
     patientId: user?._id,
     doctorId: selectedDoctor._id,
     condition: selectedCondition,
-    // keep these for backward-compat (optional):
-    date: selectedDate, // original picker value
-    time: local.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    // canonical:
-    startUtc,          // <<< IMPORTANT
+    startUtc, // ✅ backend yahi prefer karega
+    // (optional) legacy fields, rakho to bhi chalega:
+    // date: selectedDate,
+    // time: local.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   };
 
   onBook(appointment);
 };
+
 
 
   return (

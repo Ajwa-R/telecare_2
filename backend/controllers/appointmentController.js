@@ -117,6 +117,7 @@ exports.getLatest = async (req, res) => {
   }
 };
 
+
 // POST /api/appointments
 exports.bookAppointment = async (req, res) => {
   const { patientId, doctorId, condition, date, time, startUtc } = req.body;
@@ -128,25 +129,16 @@ exports.bookAppointment = async (req, res) => {
   try {
     let when;
 
-    if (date) {
-  const v = String(date);
-  const [ds, ts = "00:00"] = v.split("T");
-  const [y, m, d] = ds.split("-").map(Number);
-  const [hh, mm] = ts.split(":").map(Number);
+    if (startUtc) {
+      // Frontend se already UTC aa raha hai (toISOString)
+      when = new Date(startUtc);
+    } else {
+      // Picker value "YYYY-MM-DDTHH:mm" ko as-is Date banao (LOCAL)
+      // Mongo isay UTC me store kar dega — koi manual offset math NAHIN
+      when = new Date(String(date));
+    }
 
-  // Build LOCAL Date first
-  const local = new Date(y, m - 1, d, hh, mm);
-  // Convert to pure UTC ISO (no double offset)
-  const utcISO = new Date(local.getTime() - local.getTimezoneOffset() * 60000).toISOString();
-
-  when = new Date(utcISO);
-} else if (startUtc) {
-  // Accept backend ISO UTC directly
-  when = new Date(startUtc);
-}
-
-
-    if (!when || Number.isNaN(when.getTime())) {
+    if (Number.isNaN(when.getTime())) {
       return res.status(400).json({ error: "Invalid date/time" });
     }
 
@@ -154,9 +146,9 @@ exports.bookAppointment = async (req, res) => {
       patientId,
       doctorId,
       condition,
-      date: when, // legacy field
-      time: time || when.toISOString().slice(11, 16), // "HH:MM" (optional)
-      startAt: when, // canonical
+      date: when,                                // legacy
+      time: time || when.toISOString().slice(11, 16),
+      startAt: when,                              // canonical
       notified5min: false,
     });
 
